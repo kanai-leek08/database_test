@@ -17,18 +17,12 @@ public class UserController {
     }
 
     public void search(Map<String, String> params) {
-        list = new User(params).search();
-        return;
+        list = new UserRepository().search(params);
     }
 
-    public class User {
-        private Map<String, String> params;
+    public class UserRepository {
 
-        public User(Map<String, String> params) {
-            this.params = params;
-        }
-
-        public List search() {
+        public List search(Map<String, String> params) {
             StringBuilder query = new StringBuilder("select * from user");
             List wheres = new ArrayList();
             if (params.get("name") != "") {
