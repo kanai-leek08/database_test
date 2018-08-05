@@ -1,6 +1,9 @@
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
+import org.junit.experimental.theories.DataPoints;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 
 import java.sql.SQLException;
@@ -20,6 +23,7 @@ public class UserControllerTest {
         }
     }
 
+    @RunWith(Theories.class)
     public static class SearchMethod extends BaseBefore {
 
         @Before
@@ -29,39 +33,39 @@ public class UserControllerTest {
             con.execute("insert into user (name, age) values ('daiki', '29');");
         }
 
-        @Test
-        public void 検索パターン() throws SQLException, ClassNotFoundException {
-            String[][] patterns = {
-                {"28", "kanai",    "1"},
-                {"28", "no match", "0"},
-                {"29", "daiki",    "2"},
-                {"28", "daiki",    "1"},
-                {"",   "",         "3"},
-            };
-            for(String[] pattern : patterns) {
-                //given
-                Map<String, String> params = new HashMap<>();
-                params.put("age", pattern[0]);
-                params.put("name", pattern[1]);
-                //when
-                UserController userContorller = new UserController();
-                userContorller.search(params);
-                //then
-                assertEquals("pattern: " + pattern[0]+pattern[1], Integer.parseInt(pattern[2]), userContorller.list.size());
-            }
+        @DataPoints
+        public static String[][] patterns = {
+            {"28", "kanai",    "1"},
+            {"28", "no match", "0"},
+            {"29", "daiki",    "2"},
+            {"28", "daiki",    "1"},
+            {"",   "",         "3"},
+        };
+
+        @Theory
+        public void 検索パターン(String[] pattern) {
+            //given
+            Map<String, String> params = new HashMap<>();
+            params.put("age", pattern[0]);
+            params.put("name", pattern[1]);
+            //when
+            UserController userContorller = new UserController();
+            userContorller.search(params);
+            //then
+            assertEquals("pattern: " + pattern[0]+pattern[1], Integer.parseInt(pattern[2]), userContorller.list.size());
         }
     }
 
     public static class ListMethod extends BaseBefore {
 
-        private void createUser(int number) throws SQLException {
+        private void createUser(int number) {
             for(int i = 0; i < number; i++) {
                 con.execute("insert into user (name, age) values ('kanai', '28');");
             }
         }
 
         @Test
-        public void データに応じた件数が取得できる() throws SQLException, ClassNotFoundException {
+        public void データに応じた件数が取得できる() {
             for (Integer number : Arrays.asList(new Integer[]{0, 1, 2})) {
                 //given
                 con.execute("delete from user;");
@@ -78,7 +82,7 @@ public class UserControllerTest {
     public static class CreateMethod extends BaseBefore {
 
         @Test
-        public void create() throws SQLException, ClassNotFoundException {
+        public void create() {
             //given
             Map<String, String> params = new HashMap<String, String>();
             params.put("name", "kanai");
