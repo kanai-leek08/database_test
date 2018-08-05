@@ -30,7 +30,7 @@ public class UserControllerTest {
         }
 
         @Test
-        public void 名前検索() throws SQLException, ClassNotFoundException {
+        public void 検索パターン() throws SQLException, ClassNotFoundException {
             String[][] patterns = {
                 {"28", "kanai",    "1"},
                 {"28", "no match", "0"},
