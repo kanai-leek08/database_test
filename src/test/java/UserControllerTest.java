@@ -58,19 +58,25 @@ public class UserControllerTest {
 
     public static class CreateMethod extends BaseBefore {
 
-        @Test
-        public void create() {
+        @DataPoints
+        public static String[][] patterns = {
+                {"28", "kanai"},
+                {"20", "kana"},
+        };
+
+        @Theory
+        public void create(String[] pattern) {
             //given
             Map<String, String> params = new HashMap<String, String>();
-            params.put("name", "kanai");
-            params.put("age", "20");
+            params.put("name", pattern[0]);
+            params.put("age",  pattern[1]);
             //when
             new UserController().create(params);
             //then
             List<Map> list = con.find("select * from user;");
             assertEquals(1, list.size());
-            assertEquals("kanai", list.get(0).get("name"));
-            assertEquals(20, list.get(0).get("age"));
+            assertEquals(pattern[0], list.get(0).get("name"));
+            assertEquals(pattern[1], list.get(0).get("age"));
         }
 
     }
