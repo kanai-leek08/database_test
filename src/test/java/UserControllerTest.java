@@ -17,7 +17,7 @@ public class UserControllerTest {
     public static class BaseBefore {
         protected  static DataBase con;
         @Before
-        public void setUp() throws SQLException, ClassNotFoundException {
+        public void setUp() {
             this.con = new DataBase();
             con.execute("delete from user;");
         }
@@ -27,7 +27,7 @@ public class UserControllerTest {
     public static class SearchMethod extends BaseBefore {
 
         @Before
-        public void setup() throws SQLException {
+        public void setup() {
             con.execute("insert into user (name, age) values ('kanai', '28');");
             con.execute("insert into user (name, age) values ('daiki', '28');");
             con.execute("insert into user (name, age) values ('daiki', '29');");
@@ -53,29 +53,6 @@ public class UserControllerTest {
             userContorller.search(params);
             //then
             assertEquals("pattern: " + pattern[0]+pattern[1], Integer.parseInt(pattern[2]), userContorller.list.size());
-        }
-    }
-
-    public static class ListMethod extends BaseBefore {
-
-        private void createUser(int number) {
-            for(int i = 0; i < number; i++) {
-                con.execute("insert into user (name, age) values ('kanai', '28');");
-            }
-        }
-
-        @Test
-        public void データに応じた件数が取得できる() {
-            for (Integer number : Arrays.asList(new Integer[]{0, 1, 2})) {
-                //given
-                con.execute("delete from user;");
-                createUser(number);
-                //when
-                UserController userContorller = new UserController();
-                userContorller.list();
-                //then
-                assertEquals("numberOfUser: " + number, Optional.ofNullable(number), Optional.ofNullable(userContorller.list.size()));
-            }
         }
     }
 

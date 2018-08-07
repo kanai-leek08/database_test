@@ -12,10 +12,6 @@ public class UserController {
         new DataBase().execute("insert into user (name, age) values ('" + name + "', '" + age + "' );");
     }
 
-    public void list() {
-        list = new DataBase().find("select * from user;");
-    }
-
     public void search(Map<String, String> params) {
         list = new UserRepository().search(params);
     }
