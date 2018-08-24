@@ -1,84 +1,130 @@
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
-
-import java.sql.SQLException;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(Enclosed.class)
 public class UserControllerTest {
 
-    public static class BaseBefore {
-        protected  static DataBase con;
-        @Before
-        public void setUp() {
-            this.con = new DataBase();
-            con.execute("delete from user;");
-        }
+    @Before
+    public void setup() {
+//        new DataBase().execute("delete from user;");
     }
 
-    @RunWith(Theories.class)
-    public static class SearchMethod extends BaseBefore {
-
-        @Before
-        public void setup() {
-            con.execute("insert into user (name, age) values ('kanai', '28');");
-            con.execute("insert into user (name, age) values ('daiki', '28');");
-            con.execute("insert into user (name, age) values ('daiki', '29');");
-        }
-
-        @DataPoints
-        public static String[][] patterns = {
-            {"28", "kanai",    "1"},
-            {"28", "no match", "0"},
-            {"29", "daiki",    "2"},
-            {"28", "daiki",    "1"},
-            {"",   "",         "3"},
+    @Test
+    public void create_user() {
+        Fixture[] fixtures = {
+                new Fixture("Johny", 32),
+                new Fixture("Onojun", 25),
         };
-
-        @Theory
-        public void 検索パターン(String[] pattern) {
+        for (Fixture fixture : fixtures) {
+            new DataBase().execute("delete from user;");
             //given
-            Map<String, String> params = new HashMap<>();
-            params.put("age", pattern[0]);
-            params.put("name", pattern[1]);
-            //when
-            UserController userContorller = new UserController();
-            userContorller.search(params);
-            //then
-            assertEquals("pattern: " + pattern[0]+pattern[1], Integer.parseInt(pattern[2]), userContorller.list.size());
-        }
-    }
-
-    public static class CreateMethod extends BaseBefore {
-
-        @DataPoints
-        public static String[][] patterns = {
-                {"28", "kanai"},
-                {"20", "kana"},
-        };
-
-        @Theory
-        public void create(String[] pattern) {
-            //given
-            Map<String, String> params = new HashMap<String, String>();
-            params.put("name", pattern[0]);
-            params.put("age",  pattern[1]);
+            String name = fixture.name;
+            Integer age = fixture.age;
+            Map<String, String> params = get_map(name, age);
             //when
             new UserController().create(params);
-            //then
-            List<Map> list = con.find("select * from user;");
-            assertEquals(1, list.size());
-            assertEquals(pattern[0], list.get(0).get("name"));
-            assertEquals(pattern[1], list.get(0).get("age"));
-        }
 
+            //then
+            List<Map> list = new DataBase().find("select * from user;");
+            assertEquals(1, list.size());
+            Map user = list.get(0);
+            assertEquals(name, user.get("name"));
+            assertEquals(age, user.get("age"));
+        }
     }
 
+    @Test
+    public void search_by_age() {
+        //given
+        new DataBase().execute("delete from user;");
+        String name = "onojun";
+        Integer age = 32;
+        Map<String, String> params = get_map(name, age);
+        new UserController().create(params);
+
+        //when
+        List<Map> list = new UserController().searchByAge(age);
+
+        //then
+        assertEquals(1, list.size());
+        Map user = list.get(0);
+        assertEquals(name, user.get("name"));
+        assertEquals(age, user.get("age"));
+    }
+
+    @Test
+    public void search_by_age_2() {
+        //given
+        new DataBase().execute("delete from user;");
+        String name = "Itamae";
+        Integer age = 22;
+        Map<String, String> params = get_map(name, age);
+        new UserController().create(params);
+
+        //when
+        List<Map> list = new UserController().searchByAge(age);
+
+        //then
+        assertEquals(1, list.size());
+        Map user = list.get(0);
+        assertEquals(name, user.get("name"));
+        assertEquals(age, user.get("age"));
+    }
+
+    @Test
+    public void search_by_name() {
+        //given
+        new DataBase().execute("delete from user;");
+        String name = "onojun";
+        Integer age = 32;
+        Map<String, String> params = get_map(name, age);
+        new UserController().create(params);
+
+        //when
+        List<Map> list = new UserController().searchByName(name);
+
+        //then
+        assertEquals(1, list.size());
+        Map user = list.get(0);
+        assertEquals(name, user.get("name"));
+        assertEquals(age, user.get("age"));
+    }
+
+    @Test
+    public void search_by_age_and_name() {
+        //given
+        new DataBase().execute("delete from user;");
+        String name = "Itamae";
+        Integer age = 25;
+        Map<String, String> params = get_map(name, age);
+        new UserController().create(params);
+
+        //when
+        List<Map> list = new UserController().searchByAgeAndName(age, name);
+
+        //then
+        assertEquals(1, list.size());
+        Map user = list.get(0);
+        assertEquals(name, user.get("name"));
+        assertEquals(age, user.get("age"));
+    }
+
+    private Map<String, String> get_map(String name, Integer age) {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("name", name);
+        params.put("age", age.toString());
+        return params;
+    }
+
+    private class Fixture {
+        private String name;
+        private int age;
+
+        public Fixture(String name, int age) {
+            this.name = name;
+            this.age = age;
+        }
+    }
 }

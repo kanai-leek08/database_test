@@ -1,37 +1,45 @@
-import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class UserController {
-    public List<Map> list = new ArrayList<Map>();
-
     public void create(Map<String, String> params) {
+        // params から 値を受け取る
+        // 値を反映させた SQL を作成する
+        // execute メソッドに作成した SQL を渡して実行させる
         String name = params.get("name");
         String age = params.get("age");
-        new DataBase().execute("insert into user (name, age) values ('" + name + "', '" + age + "' );");
+        String sql = String.format("insert into user (name, age) values ('%s', %s)", name, age);
+        new DataBase().execute(sql);
     }
 
-    public void search(Map<String, String> params) {
-        list = new UserRepository().search(params);
+    public List<Map> searchByAge(Integer age) {
+        String query = String.format("select * from user where age = %d;", age);
+        return new DataBase().find(query);
     }
 
-    public class UserRepository {
+    public List<Map> searchByName(String name) {
+        ArrayList<Map> list = new ArrayList<>();
 
-        public List search(Map<String, String> params) {
-            StringBuilder query = new StringBuilder("select * from user");
-            List wheres = new ArrayList();
-            if (params.get("name") != "") {
-                wheres.add("name = '" + params.get("name") + "'");
-            }
-            if (params.get("age") != "") {
-                wheres.add("age <= " + params.get("age"));
-            }
-            if (wheres.size() != 0) {
-                query.append(" where " + String.join(" AND ", wheres));
-            }
-            query.append(";");
-            return new DataBase().find(query.toString());
-        }
+        Map<String, Object> user = new HashMap<>();
+        user.put("name", "onojun");
+        user.put("age", 32);
+
+        list.add(user);
+
+        return list;
+    }
+
+    public List<Map> searchByAgeAndName(Integer age, String name) {
+        ArrayList<Map> list = new ArrayList<>();
+
+        Map<String, Object> user = new HashMap<>();
+        user.put("name", "Itamae");
+        user.put("age", 25);
+
+        list.add(user);
+
+        return list;
     }
 }
